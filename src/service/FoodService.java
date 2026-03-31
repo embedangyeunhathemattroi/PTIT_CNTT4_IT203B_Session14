@@ -1,20 +1,29 @@
 package service;
 
+import DAO.DrinkDAO;
 import DAO.FoodDAO;
-import DAO.FoodDAOImpl;
 import model.Food;
 
 import java.util.List;
 
 public class FoodService {
-    private FoodDAO foodDAO = new FoodDAOImpl();
-    private int foodIdCounter = 1; // ← khai báo counter cho Food
-    private int drinkIdCounter = 1; // ← khai báo counter cho Drink
-    private int pcIdCounter = 1; // ← khai báo counter cho PC
+    private FoodDAO foodDAO = new FoodDAO();
 
     // Lấy danh sách tất cả món
     public List<Food> getAllFoods() {
         return foodDAO.findAll();
+    }
+
+    public Food getFoodById(int id) {
+        return foodDAO.findById(id);
+    }
+
+    public boolean isFoodNameExists(String name) {
+        return foodDAO.isFoodNameExists(name);
+    }
+
+    public boolean updateFood(int id, String name, String desc, double price, int stock) {
+        return foodDAO.update(new Food(id, name, desc, price, stock));
     }
 
     public boolean markAsPrepared(int foodId) {
@@ -27,7 +36,7 @@ public class FoodService {
 
     // Thêm món mới
     public boolean addFood(String name, String desc, double price, int stock) {
-        Food food = new Food(foodIdCounter++, name, desc, price, stock);
+        Food food = new Food(name, desc, price, stock);
         return foodDAO.insert(food);
     }
 
