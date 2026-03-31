@@ -8,29 +8,26 @@ public class User {
     private String username;
     private String password;
     private String role;
-    private double wallet;
+    private double balance;
     private List<Booking> bookingHistory;
 
     public User() {
-        this.bookingHistory = new ArrayList<>();
-        this.wallet = 1000; // mặc định
     }
 
     public User(String username, String password, String role) {
         this.username = username;
         this.password = password;
         this.role = role.toUpperCase();
-        this.wallet = 1000;
-        this.bookingHistory = new ArrayList<>();
+        this.bookingHistory = new ArrayList<Booking>();
     }
 
-    public User(int id, String username, String password, String role, double wallet) {
+    public User(int id, String username, String password, String role, double balance) {
         this.id = id;
         this.username = username;
         this.password = password;
         this.role = role.toUpperCase();
-        this.wallet = wallet;
-        this.bookingHistory = new ArrayList<>();
+        this.balance = balance;
+        this.bookingHistory = new ArrayList<Booking>();
     }
 
     public int getId() {
@@ -65,16 +62,20 @@ public class User {
         this.role = role.toUpperCase();
     }
 
-    public double getWallet() {
-        return wallet;
+    public void setBalance(double balance) {
+        this.balance = balance;
     }
 
-    public void addWallet(double amount) {
-        this.wallet += amount;
+    public double getBalance() {
+        return balance;
     }
 
-    public void deductWallet(double amount) {
-        this.wallet -= amount;
+    public void addBalance(double amount) {
+        this.balance += amount;
+    }
+
+    public void deductBalance(double amount) {
+        this.balance -= amount;
     }
 
     public List<Booking> getBookingHistory() {
