@@ -3,6 +3,7 @@ package presentation;
 import model.User;
 import model.Food;
 import service.PCService;
+import util.InputValidate;
 import service.FoodService;
 import service.BookingService;
 
@@ -11,8 +12,7 @@ import java.util.Scanner;
 
 public class StaffMenu {
 
-    public static void menu(User user) {
-        Scanner sc = new Scanner(System.in);
+    public static void show(Scanner sc) {
 
         // ===== TẠO INSTANCE CỦA SERVICE =====
         PCService pcService = new PCService();
@@ -28,25 +28,25 @@ public class StaffMenu {
             System.out.println("0. Đăng xuất");
             System.out.print("Chọn: ");
 
-            String choice = sc.nextLine();
+            int choice = InputValidate.inputInteger(sc);
 
             switch (choice) {
-                case "1":
+                case 1:
                     System.out.println("\n=== DANH SÁCH ĐƠN HÀNG ===");
                     bookingService.showAllBookings();
                     break;
 
-                case "2":
+                case 2:
                     try {
                         System.out.print("\nNhập ID máy cần cập nhật trạng thái: ");
-                        int pcId = Integer.parseInt(sc.nextLine());
+                        int pcId = InputValidate.inputInteger(sc);
 
                         System.out.print("Chọn trạng thái (1. AVAILABLE, 2. IN_USE, 3. MAINTENANCE): ");
-                        String statusChoice = sc.nextLine();
+                        int statusChoice = InputValidate.inputInteger(sc);
                         String newStatus = switch (statusChoice) {
-                            case "1" -> "AVAILABLE";
-                            case "2" -> "IN_USE";
-                            case "3" -> "MAINTENANCE";
+                            case 1 -> "AVAILABLE";
+                            case 2 -> "IN_USE";
+                            case 3 -> "MAINTENANCE";
                             default -> null;
                         };
 
@@ -60,7 +60,7 @@ public class StaffMenu {
                         System.out.println("ID không hợp lệ!");
                     }
                     break;
-                case "3":
+                case 3:
                     System.out.println("\n=== DANH SÁCH ĐƠN F&B CHỜ XỬ LÝ ===");
 
                     // gọi service đúng
@@ -75,7 +75,7 @@ public class StaffMenu {
 
                         try {
                             System.out.print("Nhập ID food cần đánh dấu đã chuẩn bị: ");
-                            int foodId = Integer.parseInt(sc.nextLine());
+                            int foodId = InputValidate.inputInteger(sc);
 
                             foodService.markAsPrepared(foodId);
                             System.out.println("Đơn hàng đã được chuẩn bị!");
@@ -85,10 +85,10 @@ public class StaffMenu {
                     }
                     break;
 
-                case "4":
+                case 4:
                     try {
                         System.out.print("\nNhập ID đơn hàng khách đã nhận: ");
-                        int bookingId = Integer.parseInt(sc.nextLine());
+                        int bookingId = InputValidate.inputInteger(sc);
                         bookingService.confirmReceived(bookingId);
                         System.out.println("Đã xác nhận khách nhận máy!");
                     } catch (NumberFormatException e) {
@@ -96,7 +96,7 @@ public class StaffMenu {
                     }
                     break;
 
-                case "0":
+                case 0:
                     System.out.println("Đăng xuất Staff...");
                     return;
 
