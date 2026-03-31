@@ -8,7 +8,6 @@ public class Booking {
     private static int autoId = 1;
 
     private int id;
-    private User customer;
     private int pcId;
     private int userId;
     private LocalDateTime startTime;
@@ -24,7 +23,6 @@ public class Booking {
     public Booking(User user, String description, double price) {
         this.id = autoId++;
         this.userId = user.getId();
-        this.customer = user;
         this.description = description;
         this.price = price;
         this.status = "ACTIVE";
@@ -49,14 +47,6 @@ public class Booking {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public User getCustomer() {
-        return customer;
-    }
-
-    public void setCustomer(User customer) {
-        this.customer = customer;
     }
 
     public int getPcId() {
@@ -114,9 +104,9 @@ public class Booking {
     // Chỉ giữ logic khi status là "Hoàn thành"
     public void setStatus(String status) {
         this.status = status;
-        if (customer != null && "Hoàn thành".equalsIgnoreCase(status)) {
-            customer.deductWallet(price);
-        }
+        // if (customer != null && "Hoàn thành".equalsIgnoreCase(status)) {
+        //     customer.deductWallet(price);
+        // }
     }
 
     @Override
