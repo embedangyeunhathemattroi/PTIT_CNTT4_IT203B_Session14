@@ -7,11 +7,21 @@ public class Drink {
     private double price;
     private int stock;
 
+    public Drink() {
+    }
+    
     // Constructor đầy đủ
     public Drink(int drinkId, String name, String description, double price, int stock) {
         this.drinkId = drinkId;
         this.name = name;
         this.description = description;
+        this.price = price;
+        this.stock = stock;
+    }
+
+    public Drink(String name, String desc, double price, int stock) {
+        this.name = name;
+        this.description = desc;
         this.price = price;
         this.stock = stock;
     }
