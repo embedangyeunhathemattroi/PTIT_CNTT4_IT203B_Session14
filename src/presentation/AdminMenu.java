@@ -1,19 +1,24 @@
 package presentation;
 
 import model.PC;
+import model.User;
 import model.Food;
 import model.Drink;
 import service.AdminService;
+import service.DrinkService;
+import service.FoodService;
+import service.PCService;
+import util.InputValidate;
 
 import java.util.List;
 import java.util.Scanner;
 
 public class AdminMenu {
+    private static final PCService pcService = new PCService();
+    private static final FoodService foodService = new FoodService();
+    private static final DrinkService drinkService = new DrinkService();
 
-    private static final Scanner sc = new Scanner(System.in);
-    private static final AdminService service = new AdminService();
-
-    public static void menu() {
+    public static void show(Scanner sc) {
         while (true) {
             System.out.println("\n===== ADMIN MENU =====");
             System.out.println("1. Quản lý PC");
@@ -21,22 +26,22 @@ public class AdminMenu {
             System.out.println("3. Quản lý Drink");
             System.out.println("0. Thoát");
             System.out.print("Chọn: ");
-            String choice = sc.nextLine().trim();
+            int choice = Integer.parseInt(sc.nextLine().trim());
 
             switch (choice) {
-                case "1" -> pcMenu();
-                case "2" -> foodMenu();
-                case "3" -> drinkMenu();
-                case "0" -> {
-                    System.out.println("Thoát Admin Menu");
-                    return;
+                case 1 -> pcMenu(sc);
+                case 2 -> foodMenu(sc);
+                case 3 -> drinkMenu(sc);
+                case 0 -> {
+                System.out.println("Thoát Admin Menu");
+                return;
                 }
                 default -> System.out.println("Sai lựa chọn!");
             }
         }
     }
 
-    private static void pcMenu() {
+    private static void pcMenu(Scanner sc) {
         while (true) {
             System.out.println("\n--- QUẢN LÝ PC ---");
             System.out.println("1. Hiển thị PC");
@@ -45,30 +50,30 @@ public class AdminMenu {
             System.out.println("4. Xóa PC");
             System.out.println("0. Quay lại");
             System.out.print("Chọn: ");
-            String c = sc.nextLine().trim();
+            int c = Integer.parseInt(sc.nextLine().trim());
 
             switch (c) {
-                case "1" -> displayPCs();
-                case "2" -> addPC();
-                case "3" -> updatePC();
-                case "4" -> deletePC();
-                case "0" -> {
+                case 1 -> displayPCs();
+                case 2 -> addPC(sc);
+                case 3 -> updatePC(sc);
+                case 4 -> deletePC(sc);
+                case 0 -> {
                     return;
                 }
-                default -> System.out.println("Sai lựa chọn!");
+                default -> System.out.println("Lựa chọn không hợp lệ!");
             }
         }
     }
 
     private static void displayPCs() {
-        List<PC> list = service.getAllPCs();
+        List<PC> list = pcService.getAllPCs();
         if (list.isEmpty()) {
             System.out.println("Chưa có PC nào!");
             return;
         }
-        System.out.printf("%-3s %-15s %-10s %-20s %-10s\n",
+        System.out.printf("%-3s | %-15s | %-10s | %-25s | %-10s\n",
                 "ID", "Tên máy", "Loại", "Cấu hình", "Giá/h");
-        list.forEach(pc -> System.out.printf("%-3d %-15s %-10s %-20s %-10.0f\n",
+        list.forEach(pc -> System.out.printf("%-3d | %-15s | %-10s | %-25s | %-10.0f\n",
                 pc.getId(),
                 pc.getName(),
                 (pc.getCategoryId() == 1 ? "VIP" : "Standard"),
@@ -76,10 +81,10 @@ public class AdminMenu {
                 pc.getPrice()));
     }
 
-    private static void addPC() {
+    private static void addPC(Scanner sc) {
         System.out.print("Tên máy: ");
-        String name = capitalize(sc.nextLine().trim());
-        if (service.isPCNameExists(name)) {
+        String name = InputValidate.inputString(sc);
+        if (pcService.isPCNameExists(name)) {
             System.out.println("Tên máy đã tồn tại!");
             return;
         }
@@ -88,7 +93,7 @@ public class AdminMenu {
         while (true) {
             try {
                 System.out.print("Loại máy (1-VIP, 2-Standard): ");
-                category = Integer.parseInt(sc.nextLine());
+                category = InputValidate.inputInteger(sc);
                 if (category == 1 || category == 2)
                     break;
                 System.out.println("Chỉ nhập 1 hoặc 2!");
@@ -98,13 +103,13 @@ public class AdminMenu {
         }
 
         System.out.print("Cấu hình: ");
-        String config = sc.nextLine().trim();
+        String config = InputValidate.inputString(sc);
 
         double price;
         while (true) {
             try {
                 System.out.print("Giá/h: ");
-                price = Double.parseDouble(sc.nextLine());
+                price = InputValidate.inputDouble(sc);
                 if (price > 0)
                     break;
                 System.out.println("Giá phải > 0!");
@@ -112,36 +117,35 @@ public class AdminMenu {
                 System.out.println("Nhập số hợp lệ!");
             }
         }
-
-        boolean added = service.addPC(name, category, config, price, "AVAILABLE");
+        boolean added = pcService.addPC(name, category, config, price, "AVAILABLE");
         System.out.println(added ? "Thêm PC thành công!" : " Thêm thất bại!");
     }
 
-    private static void updatePC() {
+    private static void updatePC(Scanner sc) {
         displayPCs();
         System.out.print("Nhập ID PC cần sửa: ");
-        int id = Integer.parseInt(sc.nextLine());
-        PC pc = service.getPCById(id);
+        int id = InputValidate.inputInteger(sc);
+        PC pc = pcService.getPCById(id);
         if (pc == null) {
             System.out.println("Không tìm thấy PC!");
             return;
         }
 
         System.out.print("Tên mới: ");
-        String newName = capitalize(sc.nextLine().trim());
-        if (!newName.equalsIgnoreCase(pc.getName()) && service.isPCNameExists(newName)) {
+        String newName = InputValidate.inputString(sc);
+        if (!newName.equalsIgnoreCase(pc.getName()) && pcService.isPCNameExists(newName)) {
             System.out.println("Tên máy đã tồn tại!");
             return;
         }
 
         System.out.print("Cấu hình mới: ");
-        String newConfig = sc.nextLine().trim();
+        String newConfig = InputValidate.inputString(sc);
 
         double newPrice;
         while (true) {
             try {
                 System.out.print("Giá/h mới: ");
-                newPrice = Double.parseDouble(sc.nextLine());
+                newPrice = InputValidate.inputDouble(sc);
                 if (newPrice > 0)
                     break;
                 System.out.println("Giá phải > 0!");
@@ -150,19 +154,19 @@ public class AdminMenu {
             }
         }
 
-        boolean updated = service.updatePC(id, newName, newConfig, newPrice);
+        boolean updated = pcService.updatePC(id, newName, newConfig, newPrice);
         System.out.println(updated ? " Cập nhật thành công!" : " Cập nhật thất bại!");
     }
 
-    private static void deletePC() {
+    private static void deletePC(Scanner sc) {
         displayPCs();
         System.out.print("Nhập ID PC cần xóa: ");
         int id = Integer.parseInt(sc.nextLine());
-        boolean deleted = service.deletePC(id);
+        boolean deleted = pcService.deletePC(id);
         System.out.println(deleted ? " Xóa thành công!" : " Xóa thất bại!");
     }
 
-    private static void foodMenu() {
+    private static void foodMenu(Scanner sc) {
         while (true) {
             System.out.println("\n--- QUẢN LÝ FOOD ---");
             System.out.println("1. Hiển thị Food");
@@ -171,14 +175,14 @@ public class AdminMenu {
             System.out.println("4. Xóa Food");
             System.out.println("0. Quay lại");
             System.out.print("Chọn: ");
-            String c = sc.nextLine().trim();
+            int c = InputValidate.inputInteger(sc);
 
             switch (c) {
-                case "1" -> displayFoods();
-                case "2" -> addFood();
-                case "3" -> updateFood();
-                case "4" -> deleteFood();
-                case "0" -> {
+                case 1 -> displayFoods();
+                case 2 -> addFood(sc);
+                case 3 -> updateFood(sc);
+                case 4 -> deleteFood(sc);
+                case 0 -> {
                     return;
                 }
                 default -> System.out.println("Sai lựa chọn!");
@@ -187,23 +191,24 @@ public class AdminMenu {
     }
 
     private static void displayFoods() {
-        List<Food> list = service.getAllFoodsSorted();
+        List<Food> list = foodService.getAllFoods();
         if (list.isEmpty()) {
             System.out.println("Chưa có món nào!");
             return;
         }
-        System.out.printf("%-3s %-15s %-20s %-10s %-5s\n", "ID", "Tên", "Mô tả", "Giá", "SL");
+        System.out.printf("%-3s | %-15s | %-20s | %-10s | %-5s\n", "ID", "Tên", "Mô tả",
+                "Giá", "SL");
         for (Food f : list) {
-            System.out.printf("%-3d %-15s %-20s %-10.0f %-5d\n",
-                    f.getFoodId(), f.getName(), toTitleCase(f.getDescription()),
+            System.out.printf("%-3d | %-15s | %-20s | %-10.0f | %-5d\n",
+                    f.getFoodId(), f.getName(), f.getDescription(),
                     f.getPrice(), f.getStock());
         }
     }
 
-    private static void addFood() {
+    private static void addFood(Scanner sc) {
         System.out.print("Tên món: ");
-        String name = capitalize(sc.nextLine().trim());
-        if (service.isFoodNameExists(name)) {
+        String name = InputValidate.inputString(sc);
+        if (foodService.isFoodNameExists(name)) {
             System.out.println("Tên món đã tồn tại!");
             return;
         }
@@ -237,23 +242,24 @@ public class AdminMenu {
             }
         }
 
-        boolean added = service.addFood(name, desc, price, stock);
+        boolean added = foodService.addFood(name, desc, price, stock);
         System.out.println(added ? " Thêm thành công!" : " Thêm thất bại!");
     }
 
-    private static void updateFood() {
+    private static void updateFood(Scanner sc) {
         displayFoods();
         System.out.print("Nhập ID món cần sửa: ");
         int id = Integer.parseInt(sc.nextLine());
-        Food f = service.getFoodById(id);
+        Food f = foodService.getFoodById(id);
         if (f == null) {
             System.out.println("Không tìm thấy món!");
             return;
         }
 
         System.out.print("Tên mới: ");
-        String newName = capitalize(sc.nextLine().trim());
-        if (!newName.equalsIgnoreCase(f.getName()) && service.isFoodNameExists(newName)) {
+        String newName = sc.nextLine().trim();
+        if (!newName.equalsIgnoreCase(f.getName()) &&
+                foodService.isFoodNameExists(newName)) {
             System.out.println("Tên món đã tồn tại!");
             return;
         }
@@ -287,19 +293,20 @@ public class AdminMenu {
             }
         }
 
-        boolean updated = service.updateFood(id, newName, newDesc, newPrice, newStock);
+        boolean updated = foodService.updateFood(id, newName, newDesc, newPrice,
+                newStock);
         System.out.println(updated ? " Cập nhật thành công!" : " Cập nhật thất bại!");
     }
 
-    private static void deleteFood() {
+    private static void deleteFood(Scanner sc) {
         displayFoods();
         System.out.print("Nhập ID món cần xóa: ");
-        int id = Integer.parseInt(sc.nextLine());
-        boolean deleted = service.deleteFood(id);
+        int id = InputValidate.inputInteger(sc);
+        boolean deleted = foodService.deleteFood(id);
         System.out.println(deleted ? " Xóa thành công!" : " Xóa thất bại!");
     }
 
-    private static void drinkMenu() {
+    private static void drinkMenu(Scanner sc) {
         while (true) {
             System.out.println("\n--- QUẢN LÝ DRINK ---");
             System.out.println("1. Hiển thị Drink");
@@ -308,14 +315,14 @@ public class AdminMenu {
             System.out.println("4. Xóa Drink");
             System.out.println("0. Quay lại");
             System.out.print("Chọn: ");
-            String c = sc.nextLine().trim();
+            Integer choice = InputValidate.inputInteger(sc);
 
-            switch (c) {
-                case "1" -> displayDrinks();
-                case "2" -> addDrink();
-                case "3" -> updateDrink();
-                case "4" -> deleteDrink();
-                case "0" -> {
+            switch (choice) {
+                case 1 -> displayDrinks();
+                case 2 -> addDrink(sc);
+                case 3 -> updateDrink(sc);
+                case 4 -> deleteDrink(sc);
+                case 0 -> {
                     return;
                 }
                 default -> System.out.println("Sai lựa chọn!");
@@ -324,35 +331,36 @@ public class AdminMenu {
     }
 
     private static void displayDrinks() {
-        List<Drink> list = service.getAllDrinksSorted();
+        List<Drink> list = drinkService.getAllDrinks();
         if (list.isEmpty()) {
             System.out.println("Chưa có drink nào!");
             return;
         }
-        System.out.printf("%-3s %-15s %-20s %-10s %-5s\n", "ID", "Tên", "Mô tả", "Giá", "SL");
+        System.out.printf("%-3s | %-15s | %-20s | %-10s | %-5s\n", "ID", "Tên", "Mô tả",
+                "Giá", "SL");
         for (Drink d : list) {
-            System.out.printf("%-3d %-15s %-20s %-10.0f %-5d\n",
+            System.out.printf("%-3d | %-15s | %-20s | %-10.0f | %-5d\n",
                     d.getDrinkId(), d.getName(), d.getDescription().toUpperCase(),
                     d.getPrice(), d.getStock());
         }
     }
 
-    private static void addDrink() {
+    private static void addDrink(Scanner sc) {
         System.out.print("Tên drink: ");
-        String name = capitalize(sc.nextLine().trim());
-        if (service.isDrinkNameExists(name)) {
+        String name = InputValidate.inputString(sc);
+        if (drinkService.isDrinkNameExists(name)) {
             System.out.println("Tên drink đã tồn tại!");
             return;
         }
 
         System.out.print("Mô tả: ");
-        String desc = sc.nextLine().trim();
+        String desc = InputValidate.inputString(sc);
 
         double price;
         while (true) {
             try {
                 System.out.print("Giá: ");
-                price = Double.parseDouble(sc.nextLine());
+                price = InputValidate.inputDouble(sc);
                 if (price > 0)
                     break;
                 System.out.println("Giá phải > 0!");
@@ -365,7 +373,7 @@ public class AdminMenu {
         while (true) {
             try {
                 System.out.print("Số lượng: ");
-                stock = Integer.parseInt(sc.nextLine());
+                stock = InputValidate.inputInteger(sc);
                 if (stock >= 0)
                     break;
                 System.out.println("Số lượng >=0!");
@@ -374,35 +382,36 @@ public class AdminMenu {
             }
         }
 
-        boolean added = service.addDrink(name, desc, price, stock);
+        boolean added = drinkService.addDrink(name, desc, price, stock);
         System.out.println(added ? "Thêm thành công!" : " Thêm thất bại!");
     }
 
-    private static void updateDrink() {
+    private static void updateDrink(Scanner sc) {
         displayDrinks();
         System.out.print("Nhập ID drink cần sửa: ");
-        int id = Integer.parseInt(sc.nextLine());
-        Drink d = service.getDrinkById(id);
+        int id = InputValidate.inputInteger(sc);
+        Drink d = drinkService.getDrinkById(id);
         if (d == null) {
             System.out.println("Không tìm thấy drink!");
             return;
         }
 
         System.out.print("Tên mới: ");
-        String newName = capitalize(sc.nextLine().trim());
-        if (!newName.equalsIgnoreCase(d.getName()) && service.isDrinkNameExists(newName)) {
+        String newName = InputValidate.inputString(sc);
+        if (!newName.equalsIgnoreCase(d.getName()) &&
+                drinkService.isDrinkNameExists(newName)) {
             System.out.println("Tên drink đã tồn tại!");
             return;
         }
 
         System.out.print("Mô tả mới: ");
-        String newDesc = sc.nextLine().trim();
+        String newDesc = InputValidate.inputString(sc);
 
         double newPrice;
         while (true) {
             try {
                 System.out.print("Giá mới: ");
-                newPrice = Double.parseDouble(sc.nextLine());
+                newPrice = InputValidate.inputDouble(sc);
                 if (newPrice > 0)
                     break;
                 System.out.println("Giá phải > 0!");
@@ -415,7 +424,7 @@ public class AdminMenu {
         while (true) {
             try {
                 System.out.print("Số lượng mới: ");
-                newStock = Integer.parseInt(sc.nextLine());
+                newStock = InputValidate.inputInteger(sc);
                 if (newStock >= 0)
                     break;
                 System.out.println("Số lượng >=0!");
@@ -424,37 +433,16 @@ public class AdminMenu {
             }
         }
 
-        boolean updated = service.updateDrink(id, newName, newDesc, newPrice, newStock);
+        boolean updated = drinkService.updateDrink(id, newName, newDesc, newPrice,
+                newStock);
         System.out.println(updated ? " Cập nhật thành công!" : " Cập nhật thất bại!");
     }
 
-    private static void deleteDrink() {
+    private static void deleteDrink(Scanner sc) {
         displayDrinks();
         System.out.print("Nhập ID drink cần xóa: ");
-        int id = Integer.parseInt(sc.nextLine());
-        boolean deleted = service.deleteDrink(id);
+        int id = InputValidate.inputInteger(sc);
+        boolean deleted = drinkService.deleteDrink(id);
         System.out.println(deleted ? " Xóa thành công!" : " Xóa thất bại!");
-    }
-
-    private static String capitalize(String str) {
-        if (str.isEmpty())
-            return str;
-        return str.substring(0, 1).toUpperCase() + str.substring(1);
-    }
-
-    private static String toTitleCase(String str) {
-        if (str == null || str.isEmpty())
-            return str;
-        String[] words = str.split("\\s+");
-        StringBuilder sb = new StringBuilder();
-        for (String word : words) {
-            if (!word.isEmpty()) {
-                sb.append(Character.toUpperCase(word.charAt(0)));
-                if (word.length() > 1)
-                    sb.append(word.substring(1).toLowerCase());
-                sb.append(" ");
-            }
-        }
-        return sb.toString().trim();
     }
 }
